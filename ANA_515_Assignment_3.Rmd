@@ -58,7 +58,7 @@ dataSort_NN <- dataSort_N[, c(1, 2, 3, 4, 5, 6,7,8,9,11,12,13,14,16,17,18,19)]
 ```{r filter_C, echo=FALSE}
 #Question 5 : filters for CZ_TYPE and removes the column later
 datafilter <- filter(dataSort_NN, CZ_TYPE == "C")
-remove_czType <- dataSort_NN[, c(1, 2, 3, 4, 5, 6,7,8,9,10,11,12,14,15,16,17)]
+remove_czType <- datafilter[, c(1, 2, 3, 4, 5, 6,7,8,9,10,11,12,14,15,16,17)]
 
 # Question 6 : Adding a pad of 0 to the STATE_FIPS column
 dataSort_pad <- str_pad(remove_czType$STATE_FIPS, width = 3, side = "left", pad = "0")
@@ -95,6 +95,13 @@ storm_graph <- ggplot(data=merged, aes(x=area, y=Freq, fill=region)) +
   labs(x = "Land area (square miles)", y = "Num of storm events in 1969",
   title = "Storm Event for year 1969")
 storm_graph
+```
+```{r plotGraph2, echo=FALSE}
+storm_graph2 <- ggplot(data=merged, aes(x=area, y=Freq, fill=region)) +
+  geom_bar(stat="identity")+theme_minimal() +
+  labs(x = "Land area (square miles)", y = "Num of storm events in 1969",
+  title = "Storm Event for year 1969")
+storm_graph2
 ```
 
 
