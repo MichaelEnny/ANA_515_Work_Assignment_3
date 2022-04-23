@@ -1,0 +1,100 @@
+---
+title: "ANA_515_Assignment_3"
+author: "Michael Eniolade"
+date: "4/21/2022"
+output: 
+  html_document:
+    theme: 
+      bootswatch: cerulean
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#install.packages("tidyverse")
+#install.packages("knitr")
+#install.packages("bslib")
+#install.packages("dplyr")
+library(tidyverse)
+library(knitr)
+library(bslib)
+library(dplyr)
+```
+
+```{r dataload, echo=FALSE}
+StormEvents <- read_csv("C:/Users/wisdo/OneDrive/Desktop/MCDaniel/CourseWork/ANA 515/week6/StormEvents_details/StormEvents_details-ftp_v1.0_d1969_c20210803.csv")
+#Question 2 : A subset of the original data
+dataL <- StormEvents[, c(1, 2, 3, 4, 5, 6,7,8,9,10,11,12,14,16,18,20)]
+#Question 1 - having a head view of the main data
+head(dataL)
+```
+
+```{r sorttile, echo=FALSE}
+#Question 3 : Sorting data in ascending order using BEGIN_YEARMONTH
+dataSort <- dataL %>% arrange(dataL,BEGIN_YEARMONTH)
+#Question 4 change state and county names to tile case
+dataSort_State <- str_to_title(dataL$STATE)
+dataSort_County <- str_to_title(dataL$CZ_NAME)
+
+#adding the new columns(dataSort_State, dataSort_County) to the original dataset
+dataSort_State1 <- data.frame(dataSort_State) 
+dataSort_State1$id <- 1:nrow(dataSort_State1)
+
+dataSort_County1 <- data.frame(dataSort_County) 
+dataSort_County1$id <- 1:nrow(dataSort_County1)
+
+#perform inner join
+county_state <- merge(x=dataSort_State1,y=dataSort_County1,by="id")
+
+#rename column
+names(county_state)[2] <- 'STATE'
+names(county_state)[3] <- 'COUNTY'
+
+#subset-main data set : adding column to perform inner join 
+dataSort$id <- 1:nrow(dataSort)
+dataSort_N <- merge(x=dataSort,y=county_state,by="id")
+dataSort_NN <- dataSort_N[, c(1, 2, 3, 4, 5, 6,7,8,9,11,12,13,14,16,17,18,19)]
+```
+
+```{r filter_C, echo=FALSE}
+#Question 5 : filters for CZ_TYPE and removes the column later
+datafilter <- filter(dataSort_NN, CZ_TYPE == "C")
+remove_czType <- dataSort_NN[, c(1, 2, 3, 4, 5, 6,7,8,9,10,11,12,14,15,16,17)]
+
+# Question 6 : Adding a pad of 0 to the STATE_FIPS column
+dataSort_pad <- str_pad(remove_czType$STATE_FIPS, width = 3, side = "left", pad = "0")
+dataSort_pad2 <- data.frame(dataSort_pad) 
+dataSort_pad3 <- data.frame(remove_czType)  
+
+#adding id column to dataset for intersecting 2 tables
+dataSort_pad2$id <- 1:nrow(dataSort_pad2)
+dataSort_pad3$id <- 1:nrow(dataSort_pad3)
+
+#perform inner join
+dataSort_pad4 <- merge(x=dataSort_pad2,y=dataSort_pad3,by="id")
+
+#Question 7 - changing all upper case columns to lower
+rename_all(dataSort_pad4,tolower)
+```
+
+```{r QuesEightTo, echo=FALSE}
+#Question 8
+us_state_info<-data.frame(state=state.name, region=state.region, area=state.area)
+#Question 9
+state_freq <- data.frame(table(dataSort_pad4$STATE.y))
+head(state_freq)
+#rename column
+names(state_freq)[1] <- 'state'
+
+#inner join
+merged <- merge(x=state_freq,y=us_state_info,by.x="state", by.y="state")
+```
+
+```{r plotGraph, echo=FALSE}
+storm_graph <- ggplot(data=merged, aes(x=area, y=Freq, fill=region)) +
+  geom_point(aes(color=region)) +
+  labs(x = "Land area (square miles)", y = "Num of storm events in 1969",
+  title = "Storm Event for year 1969")
+storm_graph
+```
+
+
